@@ -41,6 +41,8 @@ setup(
             'map_segmentation = turtlebot4_practice4.map_segmentation:main',
             'voice_command_node = turtlebot4_practice4.voice_command_node:main',
             'voice_navigation_node = turtlebot4_practice4.voice_navigation_node:main',
+            'emotion_recognition_node = turtlebot4_practice4.emotion_recognition_node:main',
+            'emotion_control_node = turtlebot4_practice4.emotion_control_node:main',
         ],
     },
 )

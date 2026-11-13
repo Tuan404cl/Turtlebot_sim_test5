@@ -94,6 +94,8 @@ KEY_OVERRIDE_MAP = {
     ord('6'): 'Fear',
 }
 
+WIN_NAME = 'TurtleBot 4 - AI Emotion Recognition (DeepFace)'
+
 
 def canonicalize_emotion_scores(raw_scores: Optional[Dict[str, Any]]) -> Dict[str, float]:
     """
@@ -316,6 +318,8 @@ class EmotionRecognitionNode(Node):
         self.declare_parameter('face_lost_timeout_sec', 1.5)
         self.declare_parameter('publish_rate_hz', 15.0)
         self.declare_parameter('headless', False)
+        self.declare_parameter('sample_images_dir', '')
+        self.declare_parameter('sample_hold_sec', 6.0)
         if not self.has_parameter('use_sim_time'):
             self.declare_parameter('use_sim_time', False)
 
@@ -329,6 +333,8 @@ class EmotionRecognitionNode(Node):
         self.face_lost_timeout_sec = float(self.get_parameter('face_lost_timeout_sec').value)
         self.publish_rate_hz = float(self.get_parameter('publish_rate_hz').value)
         self.headless = bool(self.get_parameter('headless').value)
+        self.sample_images_dir = str(self.get_parameter('sample_images_dir').value).strip()
+        self.sample_hold_sec = max(1.0, float(self.get_parameter('sample_hold_sec').value))
         self.use_sim_time = bool(self.get_parameter('use_sim_time').value)
 
         # Publishers
@@ -357,21 +363,32 @@ class EmotionRecognitionNode(Node):
         self.emergency_stop = False
         self.manual_override: Optional[str] = None
 
-        # Mở Webcam bằng OpenCV (xử lý an toàn nếu không có camera)
-        self.cap = cv2.VideoCapture(self.camera_id)
+        # Chế độ trình diễn chuỗi ảnh khuôn mặt mẫu (khi sample_images_dir được cấu hình)
+        self._sample_frames = self._load_sample_sequence()
+        self._sample_start_time: Optional[float] = None
+        self.cap = None
         self.camera_ok = False
-        if self.cap is not None and self.cap.isOpened():
-            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_width)
-            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_height)
-            self.camera_ok = True
+
+        if self._sample_frames:
             self.get_logger().info(
-                f'Đã kết nối Webcam (/dev/video{self.camera_id}) ở {self.frame_width}x{self.frame_height}.'
+                f'Chế độ ảnh mẫu tự động: đã nạp {len(self._sample_frames)} ảnh từ '
+                f'{self.sample_images_dir} (chu kỳ {self.sample_hold_sec:.1f}s/ảnh).'
             )
         else:
-            self.get_logger().warn(
-                f'Không thể mở /dev/video{self.camera_id}! '
-                'Chạy ở chế độ khung hình giả lập (vẫn hỗ trợ phím tắt 1-6 và SPACE).'
-            )
+            # Mở Webcam bằng OpenCV (xử lý an toàn nếu không có camera)
+            self.cap = cv2.VideoCapture(self.camera_id)
+            if self.cap is not None and self.cap.isOpened():
+                self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_width)
+                self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_height)
+                self.camera_ok = True
+                self.get_logger().info(
+                    f'Đã kết nối Webcam (/dev/video{self.camera_id}) ở {self.frame_width}x{self.frame_height}.'
+                )
+            else:
+                self.get_logger().warn(
+                    f'Không thể mở /dev/video{self.camera_id}! '
+                    'Chạy ở chế độ khung hình giả lập (vẫn hỗ trợ phím tắt 1-6 và SPACE).'
+                )
 
         # Đồng bộ hóa cho worker thread DeepFace (1-slot latest-frame buffer)
         self._stop_event = threading.Event()
@@ -400,6 +417,7 @@ class EmotionRecognitionNode(Node):
         self.last_publish_time = 0.0
         self.last_logged_emotion: Optional[str] = None
         self._shutdown_requested = False
+        self._window_initialized = False
 
         # Timer ~30 FPS đọc camera & cập nhật HUD
         self.timer = self.create_timer(1.0 / 30.0, self._process_frame_cb)
@@ -410,6 +428,33 @@ class EmotionRecognitionNode(Node):
         self.get_logger().info(' Topics publish : /detected_emotion, /detected_emotion_info, /emotion/detections/image')
         self.get_logger().info(' Phím tắt HUD   : 1-6 (Test cảm xúc) | 0 (AI) | SPACE (Dừng E-Stop) | Q/ESC (Thoát)')
         self.get_logger().info('====================================================================')
+
+    def _load_sample_sequence(self):
+        """Nạp chuỗi ảnh khuôn mặt cho chế độ demo tự động khi sample_images_dir được chỉ định."""
+        if not self.sample_images_dir or not os.path.isdir(self.sample_images_dir):
+            return []
+        loaded = []
+        for label in TARGET_EMOTIONS:
+            img = None
+            for ext in ('.jpg', '.jpeg', '.png'):
+                candidate = os.path.join(self.sample_images_dir, f'{label.lower()}{ext}')
+                if os.path.isfile(candidate):
+                    img = cv2.imread(candidate)
+                    if img is not None:
+                        break
+            if img is None:
+                continue
+            canvas = np.full((self.frame_height, self.frame_width, 3), 24, dtype=np.uint8)
+            ih, iw = img.shape[:2]
+            scale = min(self.frame_width / float(iw), self.frame_height / float(ih))
+            nw = max(1, int(round(iw * scale)))
+            nh = max(1, int(round(ih * scale)))
+            resized = cv2.resize(img, (nw, nh), interpolation=cv2.INTER_AREA)
+            x0 = (self.frame_width - nw) // 2
+            y0 = (self.frame_height - nh) // 2
+            canvas[y0:y0 + nh, x0:x0 + nw] = resized
+            loaded.append((label, canvas))
+        return loaded
 
     def _robot_status_cb(self, msg: String):
         self.robot_status_text = msg.data
@@ -702,7 +747,17 @@ class EmotionRecognitionNode(Node):
         self.prev_frame_time = now
 
         frame_from_cam = False
-        if self.cap is not None and self.cap.isOpened():
+        if self._sample_frames:
+            if self._model_ready:
+                if self._sample_start_time is None:
+                    self._sample_start_time = now
+                idx = int((now - self._sample_start_time) / self.sample_hold_sec) % len(self._sample_frames)
+            else:
+                idx = 0
+            _, sample_img = self._sample_frames[idx]
+            bgr_frame = sample_img.copy()
+            frame_from_cam = True
+        elif self.cap is not None and self.cap.isOpened():
             ret, bgr_frame = self.cap.read()
             if ret and bgr_frame is not None:
                 bgr_frame = cv2.flip(bgr_frame, 1)
@@ -799,7 +854,11 @@ class EmotionRecognitionNode(Node):
         self._publish_annotated_image(bgr_frame)
 
         if not self.headless and os.environ.get('DISPLAY'):
-            cv2.imshow('TurtleBot 4 - AI Emotion Recognition (DeepFace)', bgr_frame)
+            if not self._window_initialized:
+                cv2.namedWindow(WIN_NAME, cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(WIN_NAME, 720, 540)
+                self._window_initialized = True
+            cv2.imshow(WIN_NAME, bgr_frame)
             key = cv2.waitKey(1) & 0xFF
             if key != 255:
                 self._handle_keyboard(key)

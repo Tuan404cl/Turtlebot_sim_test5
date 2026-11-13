@@ -1,0 +1,122 @@
+{
+  "Happy": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/happy.jpg",
+    "detected_emotion": "Happy",
+    "confidence_pct": 99.69,
+    "face_detected": true,
+    "bbox": [
+      334,
+      124,
+      166,
+      166
+    ],
+    "scores_pct": {
+      "Happy": 99.69,
+      "Sad": 0.0,
+      "Neutral": 0.3,
+      "Angry": 0.0,
+      "Surprise": 0.0,
+      "Fear": 0.0
+    }
+  },
+  "Sad": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/sad.jpg",
+    "detected_emotion": "Sad",
+    "confidence_pct": 59.83,
+    "face_detected": true,
+    "bbox": [
+      119,
+      0,
+      516,
+      480
+    ],
+    "scores_pct": {
+      "Happy": 0.0,
+      "Sad": 59.83,
+      "Neutral": 8.65,
+      "Angry": 28.59,
+      "Surprise": 0.0,
+      "Fear": 2.92
+    }
+  },
+  "Neutral": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/neutral.jpg",
+    "detected_emotion": "Neutral",
+    "confidence_pct": 40.82,
+    "face_detected": true,
+    "bbox": [
+      223,
+      107,
+      209,
+      209
+    ],
+    "scores_pct": {
+      "Happy": 1.11,
+      "Sad": 29.02,
+      "Neutral": 40.82,
+      "Angry": 0.43,
+      "Surprise": 0.03,
+      "Fear": 28.6
+    }
+  },
+  "Angry": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/angry.jpg",
+    "detected_emotion": "Angry",
+    "confidence_pct": 90.15,
+    "face_detected": true,
+    "bbox": [
+      203,
+      68,
+      164,
+      164
+    ],
+    "scores_pct": {
+      "Happy": 0.18,
+      "Sad": 3.04,
+      "Neutral": 0.0,
+      "Angry": 90.15,
+      "Surprise": 0.0,
+      "Fear": 6.62
+    }
+  },
+  "Surprise": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/surprise.jpg",
+    "detected_emotion": "Surprise",
+    "confidence_pct": 100.0,
+    "face_detected": true,
+    "bbox": [
+      161,
+      32,
+      229,
+      229
+    ],
+    "scores_pct": {
+      "Happy": 0.0,
+      "Sad": 0.0,
+      "Neutral": 0.0,
+      "Angry": 0.0,
+      "Surprise": 100.0,
+      "Fear": 0.0
+    }
+  },
+  "Fear": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/fear.jpg",
+    "detected_emotion": "Fear",
+    "confidence_pct": 46.91,
+    "face_detected": true,
+    "bbox": [
+      163,
+      114,
+      278,
+      278
+    ],
+    "scores_pct": {
+      "Happy": 1.19,
+      "Sad": 3.81,
+      "Neutral": 46.66,
+      "Angry": 1.39,
+      "Surprise": 0.04,
+      "Fear": 46.91
+    }
+  }
+}

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Báo Cáo Bài Thực Hành Số 8 – Nhận Diện Biểu Cảm Khuôn Mặt & Điều Khiển TurtleBot 4</title>
+  <style>
+    :root {
+      --primary: #002d62;
+      --secondary: #006699;
+      --accent: #b41919;
+      --boxbg: #f0f5fd;
+      --codebg: #f8f9fa;
+      --border: #b4cdeb;
+    }
+    body {
+      font-family: "Times New Roman", Times, serif;
+      line-height: 1.6;
+      color: #222;
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 0 24px;
+      background: #fff;
+    }
+    .cover {
+      border: 3px double var(--primary);
+      padding: 32px 28px;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .cover img.logo {
+      width: 105px;
+      margin: 12px 0;
+    }
+    h1, h2, h3 {
+      color: var(--primary);
+    }
+    h2 {
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 6px;
+      margin-top: 30px;
+    }
+    h3 {
+      color: var(--secondary);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--primary);
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    pre {
+      background: var(--codebg);
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+    code {
+      font-family: "Courier New", Courier, monospace;
+      background: #eef2f6;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    .figure {
+      text-align: center;
+      margin: 22px 0;
+    }
+    .figure img {
+      max-width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .caption {
+      font-style: italic;
+      font-size: 0.92rem;
+      color: #444;
+      margin-top: 8px;
+    }
+    .info-box {
+      background: var(--boxbg);
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <h3>ĐẠI HỌC QUỐC GIA HÀ NỘI<br/>TRƯỜNG ĐẠI HỌC CÔNG NGHỆ (UET)</h3>
+    <img class="logo" src="figures/uet_logo.png" alt="UET Logo" />
+    <h1>BÁO CÁO KỸ THUẬT: BÀI THỰC HÀNH SỐ 8</h1>
+    <h2>NHẬN DIỆN BIỂU CẢM KHUÔN MẶT BẰNG AI (DEEPFACE + OPENCV)<br/>VÀ ĐIỀU KHIỂN QUỸ ĐẠO TURTLEBOT 4 TRONG ROS 2</h2>
+    <p>
+      <strong>Sinh viên thực hiện:</strong> Nguyễn Quang Tuân – <strong>MSSV:</strong> 23020767<br/>
+      <strong>Giảng viên hướng dẫn:</strong> PGS.TS. Hoàng Văn Xiêm, CN. Nguyễn Quốc Bảo<br/>
+      <strong>Nền tảng:</strong> ROS 2 Humble, Ubuntu 22.04 LTS, Gazebo Fortress, RViz2, DeepFace &amp; OpenCV<br/>
+      <strong>GitHub Repository:</strong> <a href="https://github.com/Tuan404cl/Turtlebot_sim_test5">https://github.com/Tuan404cl/Turtlebot_sim_test5</a><br/>
+      <strong>Video Demo:</strong> <a href="https://drive.google.com/drive/folders/1vl4O0C9A4C3Ed_HwHmJAeVCzwEQZulCx?usp=drive_link">Google Drive (Public)</a>
+    </p>
+  </div>
+
+  <h2>I. SƠ ĐỒ KIẾN TRÚC HỆ THỐNG</h2>
+  <p>
+    Hệ thống gồm 3 tầng mô-đun hóa trên nền tảng <strong>ROS 2 Humble</strong>: (1) Tầng thị giác máy tính <code>emotion_recognition_node</code> chạy suy luận <strong>DeepFace</strong> bất đồng bộ trên luồng nền; (2) Tầng điều khiển quỹ đạo và an toàn <code>emotion_control_node</code> phát lệnh <code>/cmd_vel</code> ở tần số <code>20 Hz</code>; và (3) Tầng mô phỏng vật lý Gazebo Fortress kết hợp định vị bản đồ AMCL và RViz2.
+  </p>
+  <pre><code>[Webcam /dev/video0 hoặc 06 Ảnh Mẫu] ---> [emotion_recognition_node (DeepFace Async Worker + EmotionStabilizer)]
+   |-- Publish: /detected_emotion (std_msgs/String) ---------> [emotion_control_node (EmotionMotionController @ 20 Hz)]
+   |-- Publish: /detected_emotion_info (JSON metadata)            |-- Subscribe: /odom (Tích phân góc xoay 360° Surprise)
+   |-- Publish: /emotion/detections/image (sensor_msgs/Image)     |-- Subscribe: /scan (Bảo vệ chống va chạm LiDAR 0.25m)
+   ^-- Subscribe: /emotion_robot_status --------------------------|
+                                                                  |-- Publish: /cmd_vel (geometry_msgs/Twist)
+                                                                  v
+                                                  [TurtleBot 4 Standard (Gazebo Fortress / Create 3)]</code></pre>
+
+  <h2>II. GIẢI THÍCH CÁC NODE, TOPIC VÀ THUẬT TOÁN XỬ LÝ</h2>
+  <div class="info-box">
+    <ul>
+      <li><strong><code>emotion_recognition_node</code> (<code>emotion_recognition_node.py</code>):</strong> Đọc khung hình <code>640x480</code> từ webcam (hoặc thư mục <code>sample_images_dir</code>), đẩy vào bộ đệm 1-slot không chặn cho luồng nền chạy <code>DeepFace.analyze(actions=['emotion'], detector_backend='opencv')</code>. Chuẩn hóa 7 lớp FER-2013 về đúng 06 nhãn yêu cầu (gộp <code>disgust</code> vào <code>Neutral</code>), lọc nhiễu qua <code>EmotionStabilizer</code> (cửa sổ trượt <code>smoothing_window=4</code>, ngưỡng <code>min_confidence=0.30</code>, <code>debounce_frames=2</code>, watchdog mất khuôn mặt <code>1.5s</code>) và vẽ HUD OpenCV trực quan kèm biểu đồ 6 thanh xác suất.</li>
+      <li><strong><code>emotion_control_node</code> (<code>emotion_control_node.py</code>):</strong> Subscribe <code>/detected_emotion</code>, <code>/odom</code>, <code>/scan</code> và điều khiển robot qua <code>/cmd_vel</code> ở tần số <code>20 Hz</code>. Tự động bật <code>safety_override='full'</code> trên <code>/motion_control/set_parameters</code> để hỗ trợ đi lùi (<code>Angry</code>). Với trạng thái <code>Surprise</code>, tích phân góc quay yaw từ <code>/odom</code> đủ <code>2π rad</code> (<code>360°</code>) rồi tự dừng (có cơ chế Edge-Trigger Latch và hủy tức thời khi gặp <code>Neutral</code>).</li>
+    </ul>
+  </div>
+
+  <h2>III. BẢNG ÁNH XẠ 06 BIỂU CẢM KHUÔN MẶT VÀ HÀNH ĐỘNG CỦA TURTLEBOT 4</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Biểu cảm</th>
+        <th>Nhãn ROS 2 (<code>/detected_emotion</code>)</th>
+        <th>Hành động của TurtleBot 4</th>
+        <th><code>linear.x</code> (m/s)</th>
+        <th><code>angular.z</code> (rad/s)</th>
+        <th>Đặc tính thực thi &amp; An toàn</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>Happy (Vui vẻ)</strong></td>
+        <td><code>Happy</code></td>
+        <td>Di chuyển theo quỹ đạo cong sang trái</td>
+        <td><code>+0.18</code></td>
+        <td><code>+0.55</code></td>
+        <td>Quỹ đạo cung tròn lệch trái bán kính R ≈ 0.327 m; giám sát LiDAR phía trước ≥ 0.25 m.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Sad (Buồn)</strong></td>
+        <td><code>Sad</code></td>
+        <td>Di chuyển theo quỹ đạo cong sang phải</td>
+        <td><code>+0.18</code></td>
+        <td><code>-0.55</code></td>
+        <td>Quỹ đạo cung tròn lệch phải bán kính R ≈ 0.327 m; giám sát LiDAR phía trước ≥ 0.25 m.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Neutral (Bình thường)</strong></td>
+        <td><code>Neutral</code></td>
+        <td>Dừng tại chỗ</td>
+        <td><code>0.00</code></td>
+        <td><code>0.00</code></td>
+        <td>Dừng tức thời; hủy ngay chu trình xoay 360° của <code>Surprise</code> nếu đang xoay.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>Angry (Tức giận)</strong></td>
+        <td><code>Angry</code></td>
+        <td>Lùi nhẹ về phía sau</td>
+        <td><code>-0.12</code></td>
+        <td><code>0.00</code></td>
+        <td>Lùi thẳng êm (Create 3 <code>safety_override='full'</code>); giám sát LiDAR phía sau ≥ 0.25 m.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>Surprise (Ngạc nhiên)</strong></td>
+        <td><code>Surprise</code></td>
+        <td>Xoay một vòng tại chỗ (360°)</td>
+        <td><code>0.00</code></td>
+        <td><code>+1.00</code></td>
+        <td>Tích phân góc yaw từ <code>/odom</code> đủ 2π rad (360°) rồi tự dừng (Edge-Triggered Latch).</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>Fear (Sợ hãi)</strong></td>
+        <td><code>Fear</code></td>
+        <td>Tiến nhẹ về phía trước</td>
+        <td><code>+0.12</code></td>
+        <td><code>0.00</code></td>
+        <td>Tiến thẳng tốc độ êm; giám sát khoảng cách LiDAR phía trước ≥ 0.25 m.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>IV. HÌNH ẢNH MINH HỌA KẾT QUẢ THỰC NGHIỆM &amp; KIỂM THỬ</h2>
+  <div class="figure">
+    <img src="figures/emotion_6_faces_grid.png" alt="Kết quả nhận diện 6 biểu cảm khuôn mặt bằng DeepFace" />
+    <div class="caption">Hình 1: Kết quả nhận diện bằng DeepFace và giao diện HUD OpenCV (Bounding Box, độ tin cậy %, biểu đồ 6 thanh xác suất và trạng thái lệnh điều khiển Robot) trên bộ ảnh khuôn mặt thực tế.</div>
+  </div>
+
+  <div class="figure">
+    <img src="figures/emotion_trajectories_odom.png" alt="Quỹ đạo 2D và thông số vận tốc của 6 biểu cảm" />
+    <div class="caption">Hình 2: (Trái) Quỹ đạo di chuyển 2D (x, y) của TurtleBot 4 cho 6 biểu cảm; (Phải) Biểu đồ đối chiếu vận tốc dài v (m/s) và vận tốc góc ω (rad/s) trên topic /cmd_vel.</div>
+  </div>
+
+  <h3>Trình diễn thực tế toàn hệ thống trong Gazebo Fortress + RViz2 &amp; Telemetry ROS 2</h3>
+  <div class="info-box">
+    <ul>
+      <li><strong>Video ghi hình trực tiếp:</strong> <code>/home/tuan/Videos/emotion_control_demo.mp4</code> (<code>2560x1600</code>, codec H.264 <code>yuv420p</code>, <code>15 fps</code>, <code>1389</code> khung hình, thời lượng <code>92.60 s</code>, dung lượng <code>33,621,221 bytes</code> / <code>32.06 MiB</code>) – <a href="https://drive.google.com/drive/folders/1vl4O0C9A4C3Ed_HwHmJAeVCzwEQZulCx?usp=drive_link">Xem trên Google Drive (Public)</a>.</li>
+      <li><strong>Bố cục hiển thị 3 vùng (DP-4 <code>2560x1600</code>):</strong> Gazebo Fortress 3D bám theo <code>turtlebot4</code> (<code>0,0,1440,1600</code>), RViz2 Map/LiDAR/AMCL/EmotionHUD (<code>1440,0,1120,760</code>), và OpenCV DeepFace HUD (<code>1440,760,1120,840</code>), chạy tự động qua 6 ảnh mẫu với <code>sample_hold_sec=8.5s</code> (<code>use_sim_time=false</code>).</li>
+      <li><strong>Tổng hợp quỹ đạo &amp; an toàn (<code>demo_telemetry.json</code>, <code>951</code> dòng @ <code>10 Hz</code>, <code>94.25 s</code>):</strong> Xuất phát <code>(-1.105, -0.149) m</code>, kết thúc <code>(1.156, -0.575) m</code>; tổng quãng đường <code>7.050 m</code> (dịch chuyển ròng <code>2.301 m</code>); <code>Surprise</code> xoay tích phân đạt <code>365.261°</code> (khóa chốt dừng tại ngưỡng <code>360°</code> lúc <code>65.17 s</code>); độ tin cậy AI trung bình <code>75.96%</code> (<code>857</code> bản tin); phanh LiDAR phía trước kích hoạt an toàn ở Chu kỳ 2 tại <code>0.2289 m &lt; 0.25 m</code> (<code>rear_min = 0.3403 m</code>).</li>
+    </ul>
+  </div>
+
+  <div class="figure">
+    <img src="figures/emotion_live_demo_composite.png" alt="Ảnh tổng hợp 6 khung hình trình diễn thực tế Gazebo + RViz2 + DeepFace HUD" />
+    <div class="caption">Hình 3: Ảnh tổng hợp 6 khung hình cắt từ video <code>/home/tuan/Videos/emotion_control_demo.mp4</code> cho 06 biểu cảm (<code>Happy @ 26.0s</code>, <code>Sad @ 35.0s</code>, <code>Neutral @ 43.0s</code>, <code>Angry @ 51.5s</code>, <code>Surprise 360° @ 59.0s</code>, <code>Fear @ 69.0s</code>), hiển thị đồng thời Gazebo 3D, RViz2 và OpenCV DeepFace HUD.</div>
+  </div>
+
+  <div class="figure">
+    <img src="figures/emotion_live_odom_telemetry.png" alt="Biểu đồ telemetry ROS 2 thực tế từ demo_telemetry.csv" />
+    <div class="caption">Hình 4: Dữ liệu telemetry ROS 2 thực tế đo từ <code>demo_telemetry.csv</code>: (Trái) Quỹ đạo 2D <code>/odom</code> phân màu theo từng biểu cảm và Chu kỳ 2; (Phải) Chuỗi thời gian <code>linear.x</code>, <code>angular.z</code> và góc tích phân <code>Surprise 360°</code> (0 → 365.3°, khóa chốt tại 360°).</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Biểu cảm</th>
+        <th>Số mẫu (10 Hz)</th>
+        <th>Thời lượng (s)</th>
+        <th>Mean <code>linear.x</code> (Peak)</th>
+        <th>Mean <code>angular.z</code> (Peak)</th>
+        <th>AI Mean Conf</th>
+        <th>Ghi chú thực nghiệm (Gazebo + ROS 2)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong><code>Neutral</code></strong></td>
+        <td>207</td>
+        <td><code>20.6634</code></td>
+        <td><code>0.0000</code> (0.00)</td>
+        <td><code>0.0000</code> (0.00)</td>
+        <td><code>69.78%</code></td>
+        <td>Khởi tạo (12.65–23.01s) + C1 (40.75–48.74s) + đuôi C2 (91.94–94.25s)</td>
+      </tr>
+      <tr>
+        <td><strong><code>Happy</code></strong></td>
+        <td>183</td>
+        <td><code>18.3336</code></td>
+        <td><code>+0.1800</code> (0.18)</td>
+        <td><code>+0.5500</code> (0.55)</td>
+        <td><code>96.34%</code></td>
+        <td>C1 (23.01–32.43s) + C2 (74.54–83.45s), rẽ cong trái R = 0.327 m</td>
+      </tr>
+      <tr>
+        <td><strong><code>Sad</code></strong></td>
+        <td>168</td>
+        <td><code>16.8041</code></td>
+        <td><code>+0.1725</code> (0.18)</td>
+        <td><code>-0.5271</code> (0.55)</td>
+        <td><code>58.35%</code></td>
+        <td>C1 (32.43–40.75s) + C2 (83.45–91.94s, phanh Front LiDAR ở 0.23m &lt; 0.25m)</td>
+      </tr>
+      <tr>
+        <td><strong><code>Angry</code></strong></td>
+        <td>87</td>
+        <td><code>8.7224</code></td>
+        <td><code>-0.1200</code> (0.12)</td>
+        <td><code>0.0000</code> (0.00)</td>
+        <td><code>88.58%</code></td>
+        <td>C1 (48.74–57.47s), lùi thẳng êm với Create 3 <code>safety_override='full'</code></td>
+      </tr>
+      <tr>
+        <td><strong><code>Surprise</code></strong></td>
+        <td>90</td>
+        <td><code>8.9403</code></td>
+        <td><code>-0.0013</code> (0.12)</td>
+        <td><code>+0.8444</code> (1.00)</td>
+        <td><code>96.67%</code></td>
+        <td>C1 (57.47–66.41s), xoay đủ <strong>365.261°</strong> từ <code>/odom</code>, khóa chốt dừng tại 360°</td>
+      </tr>
+      <tr>
+        <td><strong><code>Fear</code></strong></td>
+        <td>81</td>
+        <td><code>8.1356</code></td>
+        <td><code>+0.1200</code> (0.12)</td>
+        <td><code>0.0000</code> (0.00)</td>
+        <td><code>46.34%</code></td>
+        <td>C1 (66.41–74.54s), tiến thẳng êm về phía trước (+0.12 m/s)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>Tổng số bản tin ROS 2 ghi nhận trong phiên demo:</strong> <code>/detected_emotion = 857</code>, <code>/detected_emotion_info = 857</code>, <code>/emotion_robot_status = 322</code>, <code>/cmd_vel = 1,883</code>, <code>/odom = 4,948</code>, <code>/scan = 4,988</code>.<br/>
+    <strong>Kết quả kiểm thử tự động (Unit &amp; Integration Tests):</strong> Chạy lệnh <code>python3 -m pytest -p no:anyio -v src/turtlebot4_practice4/test/test_emotion_control.py</code> đạt <strong>41 / 41 test cases PASSED (100%)</strong> trong <code>4.90s</code>.
+  </p>
+
+  <h2>V. HƯỚNG DẪN BIÊN DỊCH VÀ CHẠY CHƯƠNG TRÌNH</h2>
+  <pre><code># 1. Biên dịch gói turtlebot4_practice4
+cd /home/tuan/turtelbot4_ws
+source /opt/ros/humble/setup.bash
+colcon build --symlink-install --packages-select turtlebot4_practice4
+source install/setup.bash
+
+# 2. Chạy tích hợp toàn bộ (Gazebo + RViz2 + Auto Undock + DeepFace Webcam):
+./src/turtlebot4_practice4/scripts/run_emotion_control.sh
+
+# 3. Chạy chế độ trình diễn tự động qua bộ 6 ảnh khuôn mặt mẫu:
+./src/turtlebot4_practice4/scripts/run_emotion_control.sh \
+    sample_images_dir:=/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples \
+    sample_hold_sec:=8.5
+
+# 4. Chỉ chạy 2 node nhận diện &amp; điều khiển (khi Gazebo hoặc Robot thật đã bật sẵn):
+./src/turtlebot4_practice4/scripts/run_emotion_control.sh launch_sim:=false</code></pre>
+</body>
+</html>

@@ -1,0 +1,176 @@
+{
+  "happy": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/happy.jpg",
+    "title": "File:Happy children.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Happy_children.jpg/960px-Happy_children.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "dominant_emotion": "happy",
+    "target_score_pct": 99.93,
+    "face_confidence": 0.92,
+    "region": {
+      "x": 377,
+      "y": 110,
+      "w": 190,
+      "h": 190,
+      "left_eye": null,
+      "right_eye": null
+    },
+    "all_scores": {
+      "angry": 0.0,
+      "disgust": 0.0,
+      "fear": 0.0,
+      "happy": 99.93,
+      "sad": 0.0,
+      "surprise": 0.0,
+      "neutral": 0.06
+    }
+  },
+  "sad": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/sad.jpg",
+    "title": "File:Sad girl cropped.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Sad_girl_cropped.jpg/960px-Sad_girl_cropped.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "dominant_emotion": "sad",
+    "target_score_pct": 62.74,
+    "face_confidence": 0.92,
+    "region": {
+      "x": 134,
+      "y": 0,
+      "w": 582,
+      "h": 559,
+      "left_eye": [
+        533,
+        111
+      ],
+      "right_eye": [
+        300,
+        112
+      ]
+    },
+    "all_scores": {
+      "angry": 21.82,
+      "disgust": 0.0,
+      "fear": 5.03,
+      "happy": 0.01,
+      "sad": 62.74,
+      "surprise": 0.0,
+      "neutral": 10.39
+    }
+  },
+  "neutral": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/neutral.jpg",
+    "title": "File:Sad Teen Girl Portrait.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Sad_Teen_Girl_Portrait.jpg/960px-Sad_Teen_Girl_Portrait.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "dominant_emotion": "neutral",
+    "target_score_pct": 60.67,
+    "face_confidence": 0.93,
+    "region": {
+      "x": 94,
+      "y": 157,
+      "w": 317,
+      "h": 317,
+      "left_eye": [
+        300,
+        267
+      ],
+      "right_eye": [
+        157,
+        288
+      ]
+    },
+    "all_scores": {
+      "angry": 0.51,
+      "disgust": 0.0,
+      "fear": 12.29,
+      "happy": 0.37,
+      "sad": 26.14,
+      "surprise": 0.02,
+      "neutral": 60.67
+    }
+  },
+  "surprise": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/surprise.jpg",
+    "title": "File:Kevin Marc Face.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Kevin_Marc_Face.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "dominant_emotion": "surprise",
+    "target_score_pct": 100.0,
+    "face_confidence": 0.91,
+    "region": {
+      "x": 30,
+      "y": 21,
+      "w": 160,
+      "h": 160,
+      "left_eye": [
+        136,
+        82
+      ],
+      "right_eye": [
+        79,
+        89
+      ]
+    },
+    "all_scores": {
+      "angry": 0.0,
+      "disgust": 0.0,
+      "fear": 0.0,
+      "happy": 0.0,
+      "sad": 0.0,
+      "surprise": 100.0,
+      "neutral": 0.0
+    }
+  },
+  "fear": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/fear.jpg",
+    "title": "File:Happy Dutch beauty.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Happy_Dutch_beauty.jpg/960px-Happy_Dutch_beauty.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "dominant_emotion": "fear",
+    "target_score_pct": 92.09,
+    "face_confidence": 0.95,
+    "region": {
+      "x": 0,
+      "y": 0,
+      "w": 480,
+      "h": 667,
+      "left_eye": [
+        271,
+        242
+      ],
+      "right_eye": [
+        235,
+        152
+      ]
+    },
+    "all_scores": {
+      "angry": 3.02,
+      "disgust": 0.0,
+      "fear": 92.09,
+      "happy": 0.04,
+      "sad": 4.74,
+      "surprise": 0.0,
+      "neutral": 0.1
+    }
+  },
+  "angry": {
+    "file": "/home/tuan/turtelbot4_ws/src/turtlebot4_practice4/config/emotion_samples/angry.jpg",
+    "title": "File:Angry Protester (42703008841).jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Angry_Protester_%2842703008841%29.jpg/960px-Angry_Protester_%2842703008841%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "dominant_emotion": "angry",
+    "target_score_pct": 75.9,
+    "face_confidence": 0.95,
+    "region": {
+      "x": 177,
+      "y": 40,
+      "w": 87,
+      "h": 87,
+      "left_eye": null,
+      "right_eye": null
+    },
+    "all_scores": {
+      "angry": 75.9,
+      "disgust": 0.0,
+      "fear": 14.35,
+      "happy": 1.03,
+      "sad": 8.71,
+      "surprise": 0.0,
+      "neutral": 0.01
+    }
+  }
+}

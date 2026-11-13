@@ -10,7 +10,10 @@ Dự án thực hành hoàn chỉnh cho robot **TurtleBot 4 Standard** trong mô
 * **Mã số sinh viên (MSSV):** 23020767
 * **Giảng viên hướng dẫn:** PGS.TS. Hoàng Văn Xiêm, CN. Nguyễn Quốc Bảo
 * **Video Demo (Google Drive - Chế độ công khai):** [Xem Video Demo trên Google Drive](https://drive.google.com/drive/folders/1vl4O0C9A4C3Ed_HwHmJAeVCzwEQZulCx?usp=drive_link)
-* **GitHub Repository (Public):** `https://github.com/Tuan404cl/Turtlebot_sim_test4`
+* **GitHub Repository (Public - Bài 8):** `https://github.com/Tuan404cl/Turtlebot_sim_test5`
+* **File báo cáo kỹ thuật Bài tập 8 (Nhận diện Biểu cảm Khuôn mặt & Điều khiển TurtleBot 4 - PDF):** [turtlebot4_practice4/docs/bao_cao_bai_tap_08.pdf](turtlebot4_practice4/docs/bao_cao_bai_tap_08.pdf)
+* **File báo cáo kỹ thuật Bài tập 8 (Nhận diện Biểu cảm Khuôn mặt & Điều khiển TurtleBot 4 - Markdown):** [turtlebot4_practice4/docs/bao_cao_bai_tap_08.md](turtlebot4_practice4/docs/bao_cao_bai_tap_08.md)
+* **File báo cáo kỹ thuật Bài tập 8 (Nhận diện Biểu cảm Khuôn mặt & Điều khiển TurtleBot 4 - HTML):** [turtlebot4_practice4/docs/bao_cao_bai_tap_08.html](turtlebot4_practice4/docs/bao_cao_bai_tap_08.html)
 * **File báo cáo kỹ thuật Bài tập 7 (Phân vùng Bản đồ & Điều hướng Giọng nói - Markdown chuẩn):** [turtlebot4_practice4/docs/bao_cao_bai_tap_07.md](turtlebot4_practice4/docs/bao_cao_bai_tap_07.md)
 * **File báo cáo kỹ thuật (Bài tập Phân vùng Bản đồ & Điều hướng Giọng nói - PDF 2 trang):** [turtlebot4_practice4/docs/bao_cao_voice_navigation.pdf](turtlebot4_practice4/docs/bao_cao_voice_navigation.pdf)
 * **File báo cáo kỹ thuật (Bài tập Phân vùng Bản đồ & Điều hướng Giọng nói - Markdown):** [turtlebot4_practice4/docs/bao_cao_voice_navigation.md](turtlebot4_practice4/docs/bao_cao_voice_navigation.md)
@@ -70,15 +73,45 @@ source /opt/ros/humble/setup.bash
 colcon build --symlink-install
 source install/setup.bash
 
-# 2. Chạy tích hợp Bài tập Phân vùng Bản đồ & Điều hướng Bằng Giọng nói với Nav2:
+# 2. Chạy tích hợp Bài tập 8 – Nhận diện Biểu cảm Khuôn mặt (DeepFace + OpenCV) & Điều khiển TurtleBot 4:
+./src/turtlebot4_practice4/scripts/run_emotion_control.sh
+
+# 3. Chạy tích hợp Bài tập Phân vùng Bản đồ & Điều hướng Bằng Giọng nói với Nav2:
 ./src/turtlebot4_practice4/scripts/run_voice_navigation_all.sh
 
-# 3. Chạy tích hợp Bài tập Điều khiển Hành vi TurtleBot 4 bằng Cử chỉ tay AI (MediaPipe + OpenCV):
+# 4. Chạy tích hợp Bài tập Điều khiển Hành vi TurtleBot 4 bằng Cử chỉ tay AI (MediaPipe + OpenCV):
 ./src/turtlebot4_practice4/scripts/run_gesture_all.sh
 
-# 4. Hoặc chạy tích hợp Bài tập AMCL Localization + Auto Nav2 + YOLOv8:
+# 5. Hoặc chạy tích hợp Bài tập AMCL Localization + Auto Nav2 + YOLOv8:
 ./src/turtlebot4_practice4/scripts/run_part4_navigation.sh
 ```
+
+---
+
+## 😊 Bài Tập Thực Hành Số 8 – Nhận Diện Biểu Cảm Khuôn Mặt (DeepFace + OpenCV) & Điều Khiển Quỹ Đạo TurtleBot 4 Qua `/cmd_vel`
+
+* **Báo cáo kỹ thuật Bài thực hành số 8 (PDF):** [`turtlebot4_practice4/docs/bao_cao_bai_tap_08.pdf`](turtlebot4_practice4/docs/bao_cao_bai_tap_08.pdf)
+* **Báo cáo kỹ thuật Bài thực hành số 8 (Markdown):** [`turtlebot4_practice4/docs/bao_cao_bai_tap_08.md`](turtlebot4_practice4/docs/bao_cao_bai_tap_08.md)
+* **Báo cáo kỹ thuật Bài thực hành số 8 (HTML):** [`turtlebot4_practice4/docs/bao_cao_bai_tap_08.html`](turtlebot4_practice4/docs/bao_cao_bai_tap_08.html)
+* **Ảnh kết quả nhận diện 06 biểu cảm khuôn mặt thực tế:** [`turtlebot4_practice4/docs/figures/emotion_6_faces_grid.png`](turtlebot4_practice4/docs/figures/emotion_6_faces_grid.png)
+* **Biểu đồ quỹ đạo Odometry của 06 biểu cảm:** [`turtlebot4_practice4/docs/figures/emotion_trajectories_odom.png`](turtlebot4_practice4/docs/figures/emotion_trajectories_odom.png)
+* **Ảnh tổng hợp trình diễn thực tế Gazebo + RViz2 + DeepFace HUD (6 biểu cảm):** [`turtlebot4_practice4/docs/figures/emotion_live_demo_composite.png`](turtlebot4_practice4/docs/figures/emotion_live_demo_composite.png)
+* **Biểu đồ telemetry ROS 2 thực tế trong Gazebo (`/odom`, `/cmd_vel`, `Surprise 360°`):** [`turtlebot4_practice4/docs/figures/emotion_live_odom_telemetry.png`](turtlebot4_practice4/docs/figures/emotion_live_odom_telemetry.png)
+* **Video Demo thực tế (Local & Google Drive):** `/home/tuan/Videos/emotion_control_demo.mp4` (`2560x1600`, H.264 `yuv420p`, `15 fps`, `1389` khung hình, thời lượng `92.60 s`, dung lượng `32.06 MiB` / `33,621,221 bytes`) – [Xem trên Google Drive](https://drive.google.com/drive/folders/1vl4O0C9A4C3Ed_HwHmJAeVCzwEQZulCx?usp=drive_link)
+
+### Bảng Ánh Xạ 06 Biểu Cảm Khuôn Mặt Sang Lệnh Vận Tốc `/cmd_vel`
+| Biểu cảm (Emotion) | Độ tin cậy thực nghiệm | Hành động của TurtleBot 4 | $v_x$ (`m/s`) | $\omega_z$ (`rad/s`) |
+| :--- | :---: | :--- | :---: | :---: |
+| **`Happy` (Vui vẻ)** | `99.7%` | Di chuyển theo quỹ đạo cong sang trái ($R = 0.327\text{ m}$) | `+0.18` | `+0.55` |
+| **`Sad` (Buồn)** | `59.8%` | Di chuyển theo quỹ đạo cong sang phải ($R = 0.327\text{ m}$) | `+0.18` | `-0.55` |
+| **`Neutral` (Bình thường)** | `40.8%` | Dừng tại chỗ (Active Brake) | `0.00` | `0.00` |
+| **`Angry` (Tức giận)** | `90.2%` | Lùi nhẹ về phía sau (`safety_override='full'`) | `-0.12` | `0.00` |
+| **`Surprise` (Ngạc nhiên)** | `100.0%` | Xoay một vòng $360^\circ$ ($2\pi\text{ rad}$) tại chỗ rồi tự dừng | `0.00` | `+1.00` |
+| **`Fear` (Sợ hãi)** | `46.9%` | Tiến nhẹ về phía trước | `+0.12` | `0.00` |
+
+### Kết Quả Đo Đạc Live Demo Trong Gazebo Fortress (`94.25 s`, `951` mẫu Telemetry @ `10 Hz`)
+* **Chuỗi chuyển đổi thực tế (`sample_hold_sec=8.5s`):** `Neutral` (khởi tạo) $\rightarrow$ `Happy` (`23.01s`) $\rightarrow$ `Sad` (`32.43s`) $\rightarrow$ `Neutral` (`40.75s`) $\rightarrow$ `Angry` (`48.74s`) $\rightarrow$ `Surprise` (`57.47s`) $\rightarrow$ `Fear` (`66.41s`), sau đó lặp sang Chu kỳ 2 (`Happy` $\rightarrow$ `Sad` kích hoạt phanh an toàn Front LiDAR tại `0.23 m < 0.25 m` $\rightarrow$ `Neutral`).
+* **Quỹ đạo & Góc xoay `Surprise 360°`:** Tổng quãng đường `/odom` đạt `7.050 m` (dịch chuyển ròng `2.301 m`); góc quay tích phân `Surprise` đạt `365.261°` (khóa chốt dừng tại ngưỡng `360°` ở `t = 65.17 s`); độ tin cậy AI trung bình toàn phiên `75.96%` (`857` bản tin `/detected_emotion`); kiểm thử tự động `pytest` đạt `41/41 PASSED`.
 
 ---
 

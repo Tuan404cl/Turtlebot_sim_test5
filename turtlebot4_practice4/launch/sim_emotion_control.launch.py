@@ -44,7 +44,7 @@ def generate_launch_description():
     sim_launch = PathJoinSubstitution([pkg_practice, 'launch', 'sim_robot.launch.py'])
     default_map = PathJoinSubstitution([pkg_practice, 'maps', 'map.yaml'])
     loc_params = PathJoinSubstitution([pkg_practice, 'config', 'localization_params.yaml'])
-    rviz_config = PathJoinSubstitution([pkg_practice, 'config', 'turtlebot4_nav2.rviz'])
+    rviz_config = PathJoinSubstitution([pkg_practice, 'config', 'turtlebot4_emotion.rviz'])
     tb4_loc_launch = PathJoinSubstitution([pkg_tb4_nav, 'launch', 'localization.launch.py'])
     fastdds_profile = PathJoinSubstitution([pkg_practice, 'config', 'fastdds_udp_only.xml'])
 
@@ -111,6 +111,16 @@ def generate_launch_description():
             choices=['true', 'false'],
             description='Tắt cửa sổ OpenCV GUI (chạy headless)',
         ),
+        DeclareLaunchArgument(
+            'sample_images_dir',
+            default_value='',
+            description='Thư mục chứa 6 ảnh khuôn mặt mẫu để demo tự động thay cho webcam',
+        ),
+        DeclareLaunchArgument(
+            'sample_hold_sec',
+            default_value='8.5',
+            description='Thời gian giữ mỗi ảnh khuôn mặt mẫu (giây) trong chế độ demo tự động',
+        ),
     ]
 
     def make_control_node():
@@ -132,6 +142,8 @@ def generate_launch_description():
             'parameters': [
                 {'camera_id': ParameterValue(LaunchConfiguration('camera_id'), value_type=int)},
                 {'headless': ParameterValue(LaunchConfiguration('headless'), value_type=bool)},
+                {'sample_images_dir': LaunchConfiguration('sample_images_dir')},
+                {'sample_hold_sec': ParameterValue(LaunchConfiguration('sample_hold_sec'), value_type=float)},
                 {'use_sim_time': False},
             ],
             'condition': IfCondition(LaunchConfiguration('enable_recognition_node')),
@@ -201,8 +213,8 @@ def generate_launch_description():
     delayed_undock = TimerAction(period=16.0, actions=[undock_node])
 
     # Khởi chạy emotion_control_node sau khi auto_undock hoàn tất để tránh tranh chấp /cmd_vel
-    delayed_control_node = TimerAction(period=25.0, actions=[make_control_node()])
-    delayed_recognition_node = TimerAction(period=27.0, actions=[make_recognition_node()])
+    delayed_control_node = TimerAction(period=30.0, actions=[make_control_node()])
+    delayed_recognition_node = TimerAction(period=32.0, actions=[make_recognition_node()])
 
     with_sim_group = GroupAction(
         actions=[

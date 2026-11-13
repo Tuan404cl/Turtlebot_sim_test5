@@ -11,7 +11,7 @@ Launch file khởi chạy mô phỏng TurtleBot 4 trong Gazebo (Ignition Fortres
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable, TimerAction
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, SetEnvironmentVariable, TimerAction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
@@ -79,7 +79,7 @@ def generate_launch_description():
     )
     delayed_robot_spawn = TimerAction(
         period=4.5,
-        actions=[robot_spawn]
+        actions=[GroupAction(actions=[robot_spawn], scoped=True)]
     )
 
     # Khởi chạy RViz2 với cấu hình chuẩn cho mô phỏng cơ bản (Fixed Frame: odom)
